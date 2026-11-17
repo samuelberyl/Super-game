@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TAPHY SUPER GAME - FIXED</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#111;color:white;text-align:center}
+h1{background:#ffcc00;color:#111;padding:12px;font-size:22px}
+#info{padding:10px;font-weight:bold;font-size:18px;background:#000}
+#info span{color:#ffcc00}
+#game{width:100%;max-width:600px;height:380px;margin:10px auto;background:lightblue;position:relative;overflow:hidden;border:4px solid white;border-radius:10px}
+#player{position:absolute;left:40px;bottom:60px;font-size:50px}
+#enemy{position:absolute;right:-50px;bottom:60px;font-size:45px}
+#coin{position:absolute;right:-50px;bottom:130px;font-size:35px}
+#ground{position:absolute;bottom:0;width:100%;height:60px;background:#00a651;color:white;display:flex;align-items:center;justify-content:center;font-weight:bold}
+#msg{position:absolute;top:40%;left:0;width:100%;font-size:30px;font-weight:bold;color:red;text-shadow:2px 2px 0 white;display:none}
+button{padding:18px 25px;margin:8px;font-size:20px;font-weight:bold;border:none;border-radius:15px;cursor:pointer}
+#jumpBtn{background:#ffcc00;color:#111}
+#shootBtn{background:red;color:white}
+#startBtn{background:#00a651;color:white;padding:18px 40px;font-size:22px}
+</style>
+</head>
+<body>
+
+<h1>🎮 TAPHY SUPER GAME V2</h1>
+<div id="info">SCORE: <span id="score">0</span> | COINS: <span id="coins">0</span> | LIVES: <span id="lives">3</span></div>
+
+<div id="game">
+<div id="player">🏃‍♂️</div>
+<div id="enemy">🦀</div>
+<div id="coin">🪙</div>
+<div id="msg">GAME OVER!</div>
+<div id="ground">TAPHY GAME - JUMP THE CRAB! COLLECT COINS!</div>
+</div>
+
+<button id="startBtn" onclick="startGame()">▶️ CLICK HERE TO START GAME</button>
+<br>
+<button id="jumpBtn" onclick="doJump()">⬆️ JUMP</button>
+<button id="shootBtn" onclick="doShoot()">🔫 SHOOT</button>
+<button onclick="resetGame()">🔄 RESTART</button>
+
+<p style="padding:10px;color:#aaa">Computer: Press SPACE to Jump | Phone: Press JUMP button</p>
+<p id="status" style="color:#ffcc00;font-weight:bold">👆 Bonyeza START GAME juu kwanza!</p>
+
+<script>
+// SIMPLE GAME - GUARANTEED TO WORK
+var score = 0;
+var coinCount = 0;
+var lives = 3;
+var playing = false;
+var playerBottom = 60;
+var isJumping = false;
+var enemyX = -50;
+var coinX = -50;
+var gameLoopTimer = null;
+
+var playerEl = document.getElementById('player');
+var enemyEl = document.getElementById('enemy');
+var coinEl = document.getElementById('coin');
+var scoreEl = document.getElementById('score');
+var coinsEl = document.getElementById('coins');
+var livesEl = document.getElementById('lives');
+var msgEl = document.getElementById('msg');
+var statusEl = document.getElementById('status');
+
+function startGame(){
+  score = 0; coinCount = 0; lives = 3; playing = true;
+  scoreEl.innerText = 0; coinsEl.innerText = 0; livesEl.innerText = 3;
+  msgEl.style.display = 'none';
+  statusEl.innerText = '🎮 GAME IS RUNNING! Jump the crab!';
+  document.getElementById('startBtn').innerText = '🎮 GAME RUNNING...';
+  enemyX = 600; coinX = 700;
+  clearInterval(gameLoopTimer);
+  gameLoopTimer = setInterval(updateGame, 30);
+  alert('Game Started! Press JUMP to jump over the crab! 🦀');
+}
+
+function resetGame(){
+  clearInterval(gameLoopTimer);
+  playing = false;
+  playerBottom = 60;
+  playerEl.style.bottom = '60px';
+  enemyX = -50; coinX = -50;
+  enemyEl.style.right = '-50px';
+  coinEl.style.right = '-50px';
+  startGame();
+}
+
+function doJump(){
+  if(!playing){ alert('Bonyeza START GAME kwanza!'); return; }
+  if(isJumping) return;
+  isJumping = true;
+  playerEl.innerText = '🦸‍♂️';
+  playerBottom = 180;
+  playerEl.style.bottom = playerBottom + 'px';
+  setTimeout(function(){
+    playerBottom = 60;
+    playerEl.style.bottom = '60px';
+    playerEl.innerText = '🏃‍♂️';
+    isJumping = false;
+  }, 500);
+}
+
+function doShoot(){
+  if(!playing){ alert('Bonyeza START GAME kwanza!'); return; }
+  // Shoot kills enemy if close
+  if(enemyX > 300 && enemyX < 580){
+    score = score + 50;
+    scoreEl.innerText = score;
+    enemyX = -50;
+    statusEl.innerText = '💥 BOOM! You killed the crab! +50';
+  } else {
+    statusEl.innerText = '🔫 Miss! Wait for crab to come closer!';
+  }
+}
+
+function updateGame(){
+  if(!playing) return;
+
+  // Move enemy from right to left
+  enemyX = enemyX - 5;
+  if(enemyX < -50){
+    enemyX = 600;
+    // Random enemy
+    var enemies = ['🦀','🐍','🧟','👾'];
+    enemyEl.innerText = enemies[Math.floor(Math.random()*enemies.length)];
+  }
+  enemyEl.style.right = (600 - enemyX) + 'px';
+  // Actually use left positioning - simpler:
+  enemyEl.style.left = enemyX + 'px';
+  enemyEl.style.right = 'auto';
+
+  // Move coin
+  coinX = coinX - 4;
+  if(coinX < -50){
+    coinX = 600;
+  }
+  coinEl.style.left = coinX + 'px';
+
+  // Check coin collect - player at 40px, coin passes
+  if(coinX > 20 && coinX < 90 && playerBottom > 100){
+    coinCount++;
+    score = score + 10;
+    coinsEl.innerText = coinCount;
+    scoreEl.innerText = score;
+    coinX = 600;
+    statusEl.innerText = '🪙 Coin! +10 points!';
+  }
+
+  // Check hit - enemy near player and player on ground
+  if(enemyX > 20 && enemyX < 90 && playerBottom < 100){
+    lives = lives - 1;
+    livesEl.innerText = lives;
+    enemyX = 600;
+    playerEl.innerText = '🤕';
+    setTimeout(function(){ if(playing) playerEl.innerText = '🏃‍♂️'; }, 400);
+    statusEl.innerText = '💥 Ouch! Crab hit you! Lives left: ' + lives;
+    if(lives <= 0){
+      playing = false;
+      clearInterval(gameLoopTimer);
+      msgEl.style.display = 'block';
+      msgEl.innerText = 'GAME OVER! Score: ' + score;
+      statusEl.innerText = 'Game Over! Bonyeza RESTART kucheza tena!';
+      document.getElementById('startBtn').innerText = '▶️ PLAY AGAIN';
+    }
+  }
+
+  // Win check
+  if(score >= 200){
+    playing = false;
+    clearInterval(gameLoopTimer);
+    msgEl.style.display = 'block';
+    msgEl.innerText = '🏆 YOU WIN! Score: ' + score;
+    statusEl.innerText = '🏆 YOU WIN! You are a Champion!';
+  }
+}
+
+// Keyboard
+document.addEventListener('keydown', function(e){
+  if(e.code === 'Space'){
+    e.preventDefault();
+    doJump();
+  }
+  if(e.code === 'KeyF'){ doShoot(); }
+});
+</script>
+
+</body>
+</html>
